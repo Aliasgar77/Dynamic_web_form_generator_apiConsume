@@ -1,0 +1,118 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+<div class="container d-flex flex-column">
+    <div class="mb-3">
+        <!-- Dynamic fields will be added here -->
+        <form id="dynamicFields" method="post" asp-action="">
+        </form>
+    </div>
+    
+
+    <div class="json_input">
+        <label for="textareaValue" class="form-label">JSON</label>
+        <textarea class="form-control" id="textareaValue" rows="5"></textarea>
+    </div>
+</div>
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $("#textareaValue").on("input", function () {
+            const jsonData = $(this).val();
+            let dynamicFieldsContainer = $("#dynamicFields");
+
+            try {
+                const fields = JSON.parse(jsonData);
+
+                dynamicFieldsContainer.empty();
+
+                let fieldArray = []; // Array to hold field data for AJAX
+
+                fields.forEach(field => {
+                    if (field.name && field.label && field.type) {
+
+                        // Prepare data for AJAX
+                        let fieldData = {
+                            UserID: 1, // Default UserID to be updated
+                            FieldName: field.name,
+                            FieldType: field.type,
+                            FieldLabel: field.label,
+                            Options: field.options || [], // Handle optional options
+                            IsRequired: field.required || false
+                        };
+                        fieldArray.push(fieldData);
+
+
+                        let fieldHtml = `<div class="mb-3"><label class="form-label">${field.label}</label>`;
+
+                        // Handle different input types
+                        if (field.type === "text" || field.type === "number" || field.type === "email") {
+                            fieldHtml += `
+                                    <input type="${field.type}" class="form-control" name="${field.name}"
+                                        ${field.required ? 'required' : ''}>
+                                `;
+                        } else if (field.type === "radio" || field.type === "checkbox") {
+                            if (Array.isArray(field.options)) {
+                                field.options.forEach(option => {
+                                    fieldHtml += `
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="${field.type}"
+                                                    name="${field.name}" value="${option}">
+                                                <label class="form-check-label">${option}</label>
+                                            </div>
+                                        `;
+                                });
+                            }
+                        } else if (field.type === "select") {
+                            if (Array.isArray(field.options)) {
+                                fieldHtml += `<select class="form-select" name="${field.name}" ${field.required ? 'required' : ''}>`;
+                                field.options.forEach(option => {
+                                    fieldHtml += `<option value="${option}">${option}</option>`;
+                                });
+                                fieldHtml += `</select>`;
+                            }
+                        } else if (field.type === "file") {
+                            fieldHtml += `
+                                    <input type="file" class="form-control" name="${field.name}" ${field.required ? 'required' : ''}>
+                                `;
+                        } else if (field.type === "textarea") {
+                            fieldHtml += `
+                                    <textarea class="form-control" name="${field.name}" ${field.required ? 'required' : ''}></textarea>
+                                `;
+                        }
+
+                        fieldHtml += `</div>`;
+
+                        dynamicFieldsContainer.append(fieldHtml);
+                    }
+                    
+
+                });
+
+                let btnSave = `<button type="submit" id="btnSave" class="btn btn-success">Save</button>`
+                dynamicFieldsContainer.append(btnSave);
+
+
+                    // Send AJAX request with all fields as a batch
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("Index", "Home")',
+                        contentType: 'application/json',
+                        data: JSON.stringify(fieldArray), // Send as properly serialized JSON object
+                        success: function (response) {
+                            alert("Fields processed successfully!");
+                        },
+                        error: function (response) {
+                            console.error("Error processing fields", response);
+                            alert("Error while processing fields.");
+                        }
+                    });
+                
+
+            } catch (error) {
+                console.error("Invalid JSON format", error);
+                dynamicFieldsContainer.html('<p class="text-danger">Invalid JSON format. Please provide valid JSON.</p>');
+            }
+        });
+    });
+</script>

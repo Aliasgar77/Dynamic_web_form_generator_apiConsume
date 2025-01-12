@@ -1,0 +1,38 @@
+﻿/* custom.css */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8f9fa;
+    color: #444;
+}
+
+.navbar-brand {
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.nav-link {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #555 !important;
+}
+
+.navbar-light .navbar-toggler-icon {
+    filter: brightness(0.6);
+}
+
+.footer {
+    background-color: #f8f9fa;
+    color: #666;
+}
+
+    .footer a {
+        color: #555;
+    }
+
+    .footer img {
+        vertical-align: middle;
+    }
+
+footer .container div {
+    font-size: 0.9rem;
+}
